@@ -7,45 +7,78 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { LoginDto, SignupDto } from './dto';
 import * as bcrypt from 'bcrypt';
 import { AUTH_CONSTANT } from 'src/constant';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
-  constructor(private prismaService: PrismaService) {}
+  constructor(
+    private prismaService: PrismaService,
+    private jwtService: JwtService,
+  ) {}
 
   async signup(signupDto: SignupDto) {
-    const isEmailUnique = await this.prismaService.user.findUnique({
-      where: { email: signupDto.email },
-    });
+    try {
+      const isEmailUnique = await this.prismaService.user.findUnique({
+        where: { email: signupDto.email },
+      });
 
-    if (isEmailUnique)
-      throw new ConflictException(AUTH_CONSTANT.EMAIL_ALREADY_TAKEN);
+      if (isEmailUnique)
+        throw new ConflictException(AUTH_CONSTANT.EMAIL_ALREADY_TAKEN);
 
-    const hashPassword = await bcrypt.hash(signupDto.password, 10);
+      const hashPassword = await bcrypt.hash(signupDto.password, 10);
 
-    const user = this.prismaService.user.create({
-      data: { ...signupDto, password: hashPassword },
-      select: { id: true, email: true, fullName: true, createdAt: true },
-    });
+      const user = this.prismaService.user.create({
+        data: { ...signupDto, password: hashPassword },
+        select: { id: true, email: true, fullName: true, createdAt: true },
+      });
 
-    return user;
+      return user;
+    } catch (err) {
+      throw err;
+    }
   }
 
   async login(loginDto: LoginDto) {
-    const user = await this.prismaService.user.findUnique({
-      where: { email: loginDto.email },
-    });
+    try {
+      const user = await this.prismaService.user.findUnique({
+        where: { email: loginDto.email },
+      });
 
-    if (!user)
-      throw new UnauthorizedException(AUTH_CONSTANT.INVALID_CREDENTIALS);
+      if (!user)
+        throw new UnauthorizedException(AUTH_CONSTANT.INVALID_CREDENTIALS);
 
-    const passwordMatched = await bcrypt.compare(
-      loginDto.password,
-      user.password,
-    );
+      const passwordMatched = await bcrypt.compare(
+        loginDto.password,
+        user.password,
+      );
 
-    if (!passwordMatched)
-      throw new UnauthorizedException(AUTH_CONSTANT.INVALID_CREDENTIALS);
+      if (!passwordMatched)
+        throw new UnauthorizedException(AUTH_CONSTANT.INVALID_CREDENTIALS);
 
-    return user;
+      const accessToken = this.createAccessToken(user.id);
+      return {
+        id: user.id,
+        email: user.email,
+        accessToken,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  createAccessToken(userId: string): string {
+    try {
+      const accessToken = this.jwtService.sign(
+        { userId },
+        {
+          secret: process.env.JWT_SECRET_KEY,
+          expiresIn: process.env.JWT_EXPIRATION,
+        },
+      );
+
+      return accessToken;
+    } catch (err) {
+      throw err;
+    }
   }
 }
