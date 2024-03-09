@@ -9,7 +9,12 @@ import {
 import { AuthService } from './auth.service';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
-import { LoginDto, SignupDto, SignupResponseDto } from './dto';
+import {
+  LoginDto,
+  LoginResponseDto,
+  SignupDto,
+  SignupResponseDto,
+} from './dto';
 import { AUTH_CONSTANT } from 'src/constant';
 
 @ApiTags('Auth')
@@ -48,7 +53,7 @@ export class AuthController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: LoginDto,
+    type: LoginResponseDto,
     description: AUTH_CONSTANT.USER_LOGIN_SUCCESS,
   })
   async login(@Body() loginDto: LoginDto, @Res() res: Response) {
