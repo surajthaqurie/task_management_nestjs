@@ -4,12 +4,15 @@ import 'dotenv/config';
 
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { UserModule } from './user/user.module';
+import { ValidationPipe } from '@nestjs/common';
+import { AuthModule } from './auth/auth.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.enableCors({ origin: true, credentials: true });
   app.setGlobalPrefix('api/v1');
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
   const options = new DocumentBuilder()
     .setTitle(process.env.APP_NAME!)
@@ -18,9 +21,9 @@ async function bootstrap() {
     .build();
 
   const apiDocument = SwaggerModule.createDocument(app, options, {
-    include: [UserModule],
+    include: [AuthModule, UserModule],
   });
-  SwaggerModule.setup('/api', app, apiDocument);
+  SwaggerModule.setup('/api-docs', app, apiDocument);
 
   const PORT = process.env.PORT || 4001;
   await app.listen(PORT);
