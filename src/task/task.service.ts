@@ -22,7 +22,6 @@ export class TaskService {
   async createTask(createTaskDto: CreateTaskDto, req: Request): Promise<Task> {
     try {
       const createdUser = (req['user'] as IJwtResponse).id;
-      // TODO: add status and assigned user also
       const task = await this.prismaService.task.create({
         data: {
           ...createTaskDto,
