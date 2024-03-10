@@ -6,11 +6,9 @@ import {
   HttpCode,
   HttpStatus,
   Param,
-  Req,
   UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { Request } from 'express';
 import {
   ApiBearerAuth,
   ApiHeader,
@@ -24,6 +22,7 @@ import { UserResponseDto } from './dto';
 import { COMMON_ERROR } from 'src/constant/common.constant';
 import { IJwtResponse } from 'src/auth/interface';
 import { AppResponse } from 'src/utils';
+import { getUser } from 'src/auth/decorators';
 
 @ApiTags('User')
 @Controller('users')
@@ -72,11 +71,9 @@ export class UserController {
     description: 'The token we need for auth',
   })
   async getUserById(
-    @Req() req: Request,
+    @getUser() currentUser: IJwtResponse,
   ): Promise<AppResponse<UserResponseDto | null>> {
     try {
-      const currentUser = req['user'] as IJwtResponse;
-
       const user = await this.userService.getUserById(currentUser.id);
       return new AppResponse<UserResponseDto | null>(
         USER_CONSTANT.USER_PROFILE_FETCHED_SUCCESS,
