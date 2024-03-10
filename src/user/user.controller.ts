@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Controller,
   Delete,
   Get,
@@ -39,13 +40,17 @@ export class UserController {
     description: USER_CONSTANT.USERS_FETCHED_SUCCESS,
   })
   async getUsers(): Promise<AppResponse<UserResponseDto[]>> {
-    const users = await this.userService.getUsers();
+    try {
+      const users = await this.userService.getUsers();
 
-    return new AppResponse<UserResponseDto[]>(
-      USER_CONSTANT.USERS_FETCHED_SUCCESS,
-    )
-      .setStatus(200)
-      .setSuccessData(users);
+      return new AppResponse<UserResponseDto[]>(
+        USER_CONSTANT.USERS_FETCHED_SUCCESS,
+      )
+        .setStatus(200)
+        .setSuccessData(users);
+    } catch (err) {
+      throw new BadRequestException(err);
+    }
   }
 
   @Get('profile')
@@ -69,14 +74,18 @@ export class UserController {
   async getUserById(
     @Req() req: Request,
   ): Promise<AppResponse<UserResponseDto | null>> {
-    const currentUser = req['user'] as IJwtResponse;
+    try {
+      const currentUser = req['user'] as IJwtResponse;
 
-    const user = await this.userService.getUserById(currentUser.id);
-    return new AppResponse<UserResponseDto | null>(
-      USER_CONSTANT.USER_PROFILE_FETCHED_SUCCESS,
-    )
-      .setStatus(200)
-      .setSuccessData(user);
+      const user = await this.userService.getUserById(currentUser.id);
+      return new AppResponse<UserResponseDto | null>(
+        USER_CONSTANT.USER_PROFILE_FETCHED_SUCCESS,
+      )
+        .setStatus(200)
+        .setSuccessData(user);
+    } catch (err) {
+      throw new BadRequestException(err);
+    }
   }
 
   @Delete(':id')
@@ -100,12 +109,16 @@ export class UserController {
   async deleteUser(
     @Param('id') userId: string,
   ): Promise<AppResponse<UserResponseDto | null>> {
-    const user = await this.userService.deleteUser(userId);
+    try {
+      const user = await this.userService.deleteUser(userId);
 
-    return new AppResponse<UserResponseDto | null>(
-      USER_CONSTANT.USER_DELETED_SUCCESS,
-    )
-      .setStatus(200)
-      .setSuccessData(user);
+      return new AppResponse<UserResponseDto | null>(
+        USER_CONSTANT.USER_DELETED_SUCCESS,
+      )
+        .setStatus(200)
+        .setSuccessData(user);
+    } catch (err) {
+      throw new BadRequestException(err);
+    }
   }
 }

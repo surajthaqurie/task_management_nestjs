@@ -12,6 +12,7 @@ import {
   Put,
   Patch,
   Query,
+  BadRequestException,
 } from '@nestjs/common';
 import { TaskService } from './task.service';
 import {
@@ -34,6 +35,7 @@ import { Request } from 'express';
 import { COMMON_ERROR, TASK_CONSTANT, USER_CONSTANT } from 'src/constant';
 import { AppResponse } from 'src/utils';
 import { TASK_STATUS, Task } from '@prisma/client';
+import { IJwtResponse } from 'src/auth/interface';
 
 @ApiTags('Task')
 @UseGuards(JwtGuard)
@@ -62,10 +64,14 @@ export class TaskController {
     @Req() req: Request,
     @Body() createTaskDto: CreateTaskDto,
   ): Promise<AppResponse<Task>> {
-    const task = await this.taskService.createTask(createTaskDto, req);
-    return new AppResponse<Task>(TASK_CONSTANT.TASK_CREATED_SUCCESS)
-      .setStatus(200)
-      .setSuccessData(task);
+    try {
+      const task = await this.taskService.createTask(createTaskDto, req);
+      return new AppResponse<Task>(TASK_CONSTANT.TASK_CREATED_SUCCESS)
+        .setStatus(200)
+        .setSuccessData(task);
+    } catch (err) {
+      throw new BadRequestException(err);
+    }
   }
 
   @Get()
@@ -109,14 +115,18 @@ export class TaskController {
     @Query('assignedUser') assignedUser: string,
     @Query('createdAt') createdAt: Date,
   ): Promise<AppResponse<Task[]>> {
-    const tasks = await this.taskService.getAllTask(
-      status,
-      assignedUser,
-      createdAt,
-    );
-    return new AppResponse<Task[]>(TASK_CONSTANT.TASKS_FETCHED_SUCCESS)
-      .setStatus(200)
-      .setSuccessData(tasks);
+    try {
+      const tasks = await this.taskService.getAllTask(
+        status,
+        assignedUser,
+        createdAt,
+      );
+      return new AppResponse<Task[]>(TASK_CONSTANT.TASKS_FETCHED_SUCCESS)
+        .setStatus(200)
+        .setSuccessData(tasks);
+    } catch (err) {
+      throw new BadRequestException(err);
+    }
   }
 
   @HttpCode(HttpStatus.OK)
@@ -136,11 +146,19 @@ export class TaskController {
     description: TASK_CONSTANT.TASK_DETAIL_FETCHED_SUCCESS,
   })
   @Get(':id')
-  async getTaskById(@Param('id') id: string): Promise<AppResponse<Task>> {
-    const task = await this.taskService.getTaskById(id);
-    return new AppResponse<Task>(TASK_CONSTANT.TASK_DETAIL_FETCHED_SUCCESS)
-      .setStatus(200)
-      .setSuccessData(task);
+  async getTaskById(
+    @Param('id') id: string,
+    @Req() req: Request,
+  ): Promise<AppResponse<Task>> {
+    try {
+      const currentUser = req['user'] as IJwtResponse;
+      const task = await this.taskService.getTaskById(id, currentUser.id);
+      return new AppResponse<Task>(TASK_CONSTANT.TASK_DETAIL_FETCHED_SUCCESS)
+        .setStatus(200)
+        .setSuccessData(task);
+    } catch (err) {
+      throw new BadRequestException(err);
+    }
   }
 
   @Put(':id')
@@ -167,11 +185,22 @@ export class TaskController {
   async updateTask(
     @Param('id') id: string,
     @Body() updateTaskDto: UpdateTaskDto,
+    @Req() req: Request,
   ): Promise<AppResponse<Task>> {
-    const task = await this.taskService.updateTask(id, updateTaskDto);
-    return new AppResponse<Task>(TASK_CONSTANT.TASK_UPDATE_SUCCESS)
-      .setStatus(200)
-      .setSuccessData(task);
+    try {
+      const currentUser = req['user'] as IJwtResponse;
+
+      const task = await this.taskService.updateTask(
+        id,
+        currentUser.id,
+        updateTaskDto,
+      );
+      return new AppResponse<Task>(TASK_CONSTANT.TASK_UPDATE_SUCCESS)
+        .setStatus(200)
+        .setSuccessData(task);
+    } catch (err) {
+      throw new BadRequestException(err);
+    }
   }
 
   @Patch('status/:id')
@@ -198,12 +227,21 @@ export class TaskController {
   async changeTaskStatus(
     @Body() taskStatusDto: TaskStatusChangeDto,
     @Param('id') taskId: string,
+    @Req() req: Request,
   ): Promise<AppResponse<Task>> {
-    const task = await this.taskService.changeTaskStatus(taskId, taskStatusDto);
-
-    return new AppResponse<Task>(TASK_CONSTANT.TASK_STATUS_CHANGED_SUCCESS)
-      .setStatus(200)
-      .setSuccessData(task);
+    try {
+      const currentUser = req['user'] as IJwtResponse;
+      const task = await this.taskService.changeTaskStatus(
+        taskId,
+        currentUser.id,
+        taskStatusDto,
+      );
+      return new AppResponse<Task>(TASK_CONSTANT.TASK_STATUS_CHANGED_SUCCESS)
+        .setStatus(200)
+        .setSuccessData(task);
+    } catch (err) {
+      throw new BadRequestException(err);
+    }
   }
 
   @Patch('assign/:id')
@@ -235,11 +273,18 @@ export class TaskController {
     @Body() taskAssignedDto: TaskAssignedUserDto,
     @Param('id') taskId: string,
   ): Promise<AppResponse<Task>> {
-    const task = await this.taskService.assignTaskUser(taskId, taskAssignedDto);
+    try {
+      const task = await this.taskService.assignTaskUser(
+        taskId,
+        taskAssignedDto,
+      );
 
-    return new AppResponse<Task>(TASK_CONSTANT.USER_ASSIGNED_SUCCESS)
-      .setStatus(200)
-      .setSuccessData(task);
+      return new AppResponse<Task>(TASK_CONSTANT.USER_ASSIGNED_SUCCESS)
+        .setStatus(200)
+        .setSuccessData(task);
+    } catch (err) {
+      throw new BadRequestException(err);
+    }
   }
 
   @Delete(':id')
@@ -263,10 +308,18 @@ export class TaskController {
     type: TaskResponseDto,
     description: TASK_CONSTANT.TASK_DELETED_SUCCESS,
   })
-  async removeTask(@Param('id') id: string): Promise<AppResponse<Task>> {
-    const task = await this.taskService.removeTask(id);
-    return new AppResponse<Task>(TASK_CONSTANT.TASK_DELETED_SUCCESS)
-      .setStatus(200)
-      .setSuccessData(task);
+  async removeTask(
+    @Param('id') id: string,
+    @Req() req: Request,
+  ): Promise<AppResponse<Task>> {
+    try {
+      const currentUser = req['user'] as IJwtResponse;
+      const task = await this.taskService.removeTask(id, currentUser.id);
+      return new AppResponse<Task>(TASK_CONSTANT.TASK_DELETED_SUCCESS)
+        .setStatus(200)
+        .setSuccessData(task);
+    } catch (err) {
+      throw new BadRequestException(err);
+    }
   }
 }

@@ -1,4 +1,11 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
@@ -30,10 +37,16 @@ export class AuthController {
   async signup(
     @Body() signupDto: SignupDto,
   ): Promise<AppResponse<SignupResponseDto>> {
-    const user = await this.authService.signup(signupDto);
-    return new AppResponse<SignupResponseDto>(AUTH_CONSTANT.USER_SIGNUP_SUCCESS)
-      .setStatus(201)
-      .setSuccessData(user);
+    try {
+      const user = await this.authService.signup(signupDto);
+      return new AppResponse<SignupResponseDto>(
+        AUTH_CONSTANT.USER_SIGNUP_SUCCESS,
+      )
+        .setStatus(201)
+        .setSuccessData(user);
+    } catch (err) {
+      throw new BadRequestException(err);
+    }
   }
 
   @Post('login')
@@ -51,9 +64,13 @@ export class AuthController {
   async login(
     @Body() loginDto: LoginDto,
   ): Promise<AppResponse<LoginResponseDto>> {
-    const user = await this.authService.login(loginDto);
-    return new AppResponse<LoginResponseDto>(AUTH_CONSTANT.USER_LOGIN_SUCCESS)
-      .setStatus(201)
-      .setSuccessData(user);
+    try {
+      const user = await this.authService.login(loginDto);
+      return new AppResponse<LoginResponseDto>(AUTH_CONSTANT.USER_LOGIN_SUCCESS)
+        .setStatus(201)
+        .setSuccessData(user);
+    } catch (err) {
+      throw new BadRequestException(err);
+    }
   }
 }

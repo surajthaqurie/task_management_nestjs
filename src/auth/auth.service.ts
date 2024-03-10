@@ -17,6 +17,8 @@ import { Request } from 'express';
 
 @Injectable()
 export class AuthService {
+  salt = 10;
+
   constructor(
     private prismaService: PrismaService,
     private jwtService: JwtService,
@@ -31,7 +33,7 @@ export class AuthService {
       if (isEmailUnique)
         throw new ConflictException(AUTH_CONSTANT.EMAIL_ALREADY_TAKEN);
 
-      const hashPassword = await bcrypt.hash(signupDto.password, 10);
+      const hashPassword = await bcrypt.hash(signupDto.password, this.salt);
 
       const user = this.prismaService.user.create({
         data: { ...signupDto, password: hashPassword },

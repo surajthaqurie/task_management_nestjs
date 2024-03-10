@@ -55,9 +55,11 @@ export class TaskService {
     }
   }
 
-  async getTaskById(id: string): Promise<Task> {
+  async getTaskById(id: string, userId: string | null = null): Promise<Task> {
     try {
-      const task = await this.prismaService.task.findUnique({ where: { id } });
+      const task = await this.prismaService.task.findFirst({
+        where: { id, ...(userId && { assignUser: userId }) },
+      });
       if (!task)
         throw new NotFoundException(TASK_CONSTANT.TASK_RECORD_NOT_FOUND);
 
@@ -67,9 +69,13 @@ export class TaskService {
     }
   }
 
-  async updateTask(id: string, updateTaskDto: UpdateTaskDto): Promise<Task> {
+  async updateTask(
+    id: string,
+    userId: string,
+    updateTaskDto: UpdateTaskDto,
+  ): Promise<Task> {
     try {
-      const task = await this.getTaskById(id);
+      const task = await this.getTaskById(id, userId);
 
       return this.prismaService.task.update({
         where: { id: task.id },
@@ -82,10 +88,11 @@ export class TaskService {
 
   async changeTaskStatus(
     id: string,
+    userId: string,
     taskStatusDto: TaskStatusChangeDto,
   ): Promise<Task> {
     try {
-      const task = await this.getTaskById(id);
+      const task = await this.getTaskById(id, userId);
 
       return this.prismaService.task.update({
         where: { id: task.id },
@@ -116,9 +123,9 @@ export class TaskService {
     }
   }
 
-  async removeTask(id: string): Promise<Task> {
+  async removeTask(id: string, userId: string): Promise<Task> {
     try {
-      const task = await this.getTaskById(id);
+      const task = await this.getTaskById(id, userId);
       return this.prismaService.task.delete({ where: { id: task.id } });
     } catch (err) {
       throw err;

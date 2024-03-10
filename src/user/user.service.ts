@@ -7,40 +7,52 @@ export class UserService {
   constructor(private prisma: PrismaService) {}
 
   async getUsers(): Promise<UserResponseDto[]> {
-    return this.prisma.user.findMany({
-      select: {
-        id: true,
-        fullName: true,
-        email: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    try {
+      return this.prisma.user.findMany({
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+    } catch (err) {
+      throw err;
+    }
   }
 
   async getUserById(id: string): Promise<UserResponseDto | null> {
-    return this.prisma.user.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        fullName: true,
-        email: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    try {
+      return this.prisma.user.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+    } catch (err) {
+      throw err;
+    }
   }
 
   async deleteUser(id: string): Promise<UserResponseDto | null> {
-    return this.prisma.user.delete({
-      where: { id },
-      select: {
-        id: true,
-        fullName: true,
-        email: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    try {
+      return this.prisma.user.delete({
+        where: { id },
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+    } catch (err) {
+      throw err;
+    }
   }
 }
