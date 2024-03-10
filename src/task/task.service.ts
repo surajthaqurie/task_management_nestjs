@@ -1,19 +1,28 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { TaskStatusChangeDto, CreateTaskDto, UpdateTaskDto } from './dto';
+import {
+  TaskStatusChangeDto,
+  CreateTaskDto,
+  UpdateTaskDto,
+  TaskAssignedUserDto,
+} from './dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Request } from 'express';
 import { IJwtResponse } from 'src/auth/interface';
-import { TASK_CONSTANT } from 'src/constant';
-import { Task } from '@prisma/client';
+import { TASK_CONSTANT, USER_CONSTANT } from 'src/constant';
+import { TASK_STATUS, Task } from '@prisma/client';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class TaskService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly userService: UserService,
+  ) {}
 
   async createTask(createTaskDto: CreateTaskDto, req: Request): Promise<Task> {
     try {
       const createdUser = (req['user'] as IJwtResponse).id;
-
+      // TODO: add status and assigned user also
       const task = await this.prismaService.task.create({
         data: {
           ...createTaskDto,
@@ -27,9 +36,21 @@ export class TaskService {
     }
   }
 
-  async getAllTask() {
+  async getAllTask(status: TASK_STATUS, assignedUser: string, createdAt: Date) {
     try {
-      return this.prismaService.task.findMany({});
+      return this.prismaService.task.findMany({
+        where: {
+          status: {
+            equals: status,
+          },
+          assignUser: {
+            contains: assignedUser,
+          },
+          createdAt: {
+            equals: createdAt,
+          },
+        },
+      });
     } catch (err) {
       throw err;
     }
@@ -70,6 +91,26 @@ export class TaskService {
       return this.prismaService.task.update({
         where: { id: task.id },
         data: { status: taskStatusDto.status },
+      });
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async assignTaskUser(id: string, taskAssignedDto: TaskAssignedUserDto) {
+    try {
+      const task = await this.getTaskById(id);
+
+      const user = await this.userService.getUserById(
+        taskAssignedDto.assignedUser,
+      );
+
+      if (!user)
+        throw new NotFoundException(USER_CONSTANT.USER_RECORD_NOT_FOUND);
+
+      return this.prismaService.task.update({
+        where: { id: task.id },
+        data: { assignUser: taskAssignedDto.assignedUser },
       });
     } catch (err) {
       throw err;

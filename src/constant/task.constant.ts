@@ -6,4 +6,5 @@ export const TASK_CONSTANT = {
   TASK_DELETED_SUCCESS: 'Task deleted successfully',
   TASK_RECORD_NOT_FOUND: 'Task record not found',
   TASK_STATUS_CHANGED_SUCCESS: 'Task status changed successfully',
+  USER_ASSIGNED_SUCCESS: 'User assigned on the task successfully',
 };

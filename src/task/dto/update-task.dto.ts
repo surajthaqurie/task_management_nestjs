@@ -2,28 +2,8 @@ import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { CreateTaskDto } from './create-task.dto';
 import { TASK_STATUS } from '@prisma/client';
 import { IsNotEmpty, IsString } from 'class-validator';
-import { Optional } from '@nestjs/common';
 
-export class UpdateTaskDto extends PartialType(CreateTaskDto) {
-  @ApiProperty({
-    example: 'New',
-    description: 'Status of the task',
-    format: 'string',
-    enum: TASK_STATUS,
-  })
-  @IsNotEmpty()
-  @IsString()
-  status: TASK_STATUS;
-
-  @ApiProperty({
-    example: '7c6cef4c-3c86-4ea2-a2ee-af9e990e3e7b',
-    description: 'Id for user who is assign on the task',
-    format: 'string',
-  })
-  @Optional()
-  @IsString()
-  assignUser: string;
-}
+export class UpdateTaskDto extends PartialType(CreateTaskDto) {}
 
 export class TaskResponseDto extends UpdateTaskDto {
   @ApiProperty({
@@ -65,4 +45,15 @@ export class TaskStatusChangeDto {
   @IsNotEmpty()
   @IsString()
   status: TASK_STATUS;
+}
+
+export class TaskAssignedUserDto {
+  @ApiProperty({
+    example: '7c6cef4c-3c86-4ea2-a2ee-af9e990e3e7b',
+    description: 'Id of the user to assigned on the task',
+    format: 'string',
+  })
+  @IsNotEmpty()
+  @IsString()
+  assignedUser: string;
 }
