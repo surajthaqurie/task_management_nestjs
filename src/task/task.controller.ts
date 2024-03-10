@@ -28,8 +28,10 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtGuard } from 'src/auth/guards';
-import { Request, Response } from 'express';
+import { Request } from 'express';
 import { COMMON_ERROR, TASK_CONSTANT } from 'src/constant';
+import { AppResponse } from 'src/utils';
+import { Task } from '@prisma/client';
 
 @ApiTags('Task')
 @UseGuards(JwtGuard)
@@ -57,14 +59,11 @@ export class TaskController {
   async createTask(
     @Req() req: Request,
     @Body() createTaskDto: CreateTaskDto,
-    @Res() res: Response,
-  ) {
+  ): Promise<AppResponse<Task>> {
     const task = await this.taskService.createTask(createTaskDto, req);
-    return res.status(201).json({
-      success: true,
-      message: TASK_CONSTANT.TASK_CREATED_SUCCESS,
-      data: task,
-    });
+    return new AppResponse<Task>(TASK_CONSTANT.TASK_CREATED_SUCCESS)
+      .setStatus(200)
+      .setSuccessData(task);
   }
 
   @Get()
@@ -85,13 +84,11 @@ export class TaskController {
     isArray: true,
     description: TASK_CONSTANT.TASKS_FETCHED_SUCCESS,
   })
-  async getAllTask(@Res() res: Response) {
+  async getAllTask(): Promise<AppResponse<Task[]>> {
     const tasks = await this.taskService.getAllTask();
-    return res.status(200).json({
-      success: true,
-      message: TASK_CONSTANT.TASKS_FETCHED_SUCCESS,
-      data: tasks,
-    });
+    return new AppResponse<Task[]>(TASK_CONSTANT.TASKS_FETCHED_SUCCESS)
+      .setStatus(200)
+      .setSuccessData(tasks);
   }
 
   @HttpCode(HttpStatus.OK)
@@ -111,13 +108,11 @@ export class TaskController {
     description: TASK_CONSTANT.TASK_DETAIL_FETCHED_SUCCESS,
   })
   @Get(':id')
-  async getTaskById(@Res() res: Response, @Param('id') id: string) {
+  async getTaskById(@Param('id') id: string): Promise<AppResponse<Task>> {
     const task = await this.taskService.getTaskById(id);
-    return res.status(200).json({
-      success: true,
-      message: TASK_CONSTANT.TASK_DETAIL_FETCHED_SUCCESS,
-      data: task,
-    });
+    return new AppResponse<Task>(TASK_CONSTANT.TASK_DETAIL_FETCHED_SUCCESS)
+      .setStatus(200)
+      .setSuccessData(task);
   }
 
   @Put(':id')
@@ -138,30 +133,25 @@ export class TaskController {
     description: TASK_CONSTANT.TASK_UPDATE_SUCCESS,
   })
   async updateTask(
-    @Res() res: Response,
     @Param('id') id: string,
     @Body() updateTaskDto: UpdateTaskDto,
-  ) {
+  ): Promise<AppResponse<Task>> {
     const task = await this.taskService.updateTask(id, updateTaskDto);
-    return res.status(200).json({
-      success: true,
-      message: TASK_CONSTANT.TASK_UPDATE_SUCCESS,
-      data: task,
-    });
+    return new AppResponse<Task>(TASK_CONSTANT.TASK_UPDATE_SUCCESS)
+      .setStatus(200)
+      .setSuccessData(task);
   }
 
   @Patch('status/:id')
   async changeTaskStatus(
     @Body() taskStatusDto: TaskStatusChangeDto,
-    @Res() res: Response,
     @Param('id') taskId: string,
-  ) {
+  ): Promise<AppResponse<Task>> {
     const task = await this.taskService.changeTaskStatus(taskId, taskStatusDto);
-    return res.status(200).json({
-      success: true,
-      message: TASK_CONSTANT.TASK_STATUS_CHANGED_SUCCESS,
-      data: task,
-    });
+
+    return new AppResponse<Task>(TASK_CONSTANT.TASK_STATUS_CHANGED_SUCCESS)
+      .setStatus(200)
+      .setSuccessData(task);
   }
 
   @Delete(':id')
@@ -181,12 +171,10 @@ export class TaskController {
     type: TaskResponseDto,
     description: TASK_CONSTANT.TASK_DELETED_SUCCESS,
   })
-  async removeTask(@Res() res: Response, @Param('id') id: string) {
+  async removeTask(@Param('id') id: string): Promise<AppResponse<Task>> {
     const task = await this.taskService.removeTask(id);
-    return res.status(200).json({
-      success: true,
-      message: TASK_CONSTANT.TASK_DELETED_SUCCESS,
-      data: task,
-    });
+    return new AppResponse<Task>(TASK_CONSTANT.TASK_DELETED_SUCCESS)
+      .setStatus(200)
+      .setSuccessData(task);
   }
 }

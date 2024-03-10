@@ -1,14 +1,6 @@
-import {
-  Body,
-  Controller,
-  HttpCode,
-  HttpStatus,
-  Post,
-  Res,
-} from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Response } from 'express';
 import {
   LoginDto,
   LoginResponseDto,
@@ -16,6 +8,7 @@ import {
   SignupResponseDto,
 } from './dto';
 import { AUTH_CONSTANT } from 'src/constant';
+import { AppResponse } from 'src/utils';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -34,14 +27,13 @@ export class AuthController {
     type: SignupResponseDto,
     description: AUTH_CONSTANT.USER_SIGNUP_SUCCESS,
   })
-  async signup(@Body() signupDto: SignupDto, @Res() res: Response) {
+  async signup(
+    @Body() signupDto: SignupDto,
+  ): Promise<AppResponse<SignupResponseDto>> {
     const user = await this.authService.signup(signupDto);
-
-    return res.status(201).json({
-      success: true,
-      message: AUTH_CONSTANT.USER_SIGNUP_SUCCESS,
-      data: user,
-    });
+    return new AppResponse<SignupResponseDto>(AUTH_CONSTANT.USER_SIGNUP_SUCCESS)
+      .setStatus(201)
+      .setSuccessData(user);
   }
 
   @Post('login')
@@ -56,13 +48,12 @@ export class AuthController {
     type: LoginResponseDto,
     description: AUTH_CONSTANT.USER_LOGIN_SUCCESS,
   })
-  async login(@Body() loginDto: LoginDto, @Res() res: Response) {
+  async login(
+    @Body() loginDto: LoginDto,
+  ): Promise<AppResponse<LoginResponseDto>> {
     const user = await this.authService.login(loginDto);
-
-    return res.status(200).json({
-      success: true,
-      message: AUTH_CONSTANT.USER_LOGIN_SUCCESS,
-      data: user,
-    });
+    return new AppResponse<LoginResponseDto>(AUTH_CONSTANT.USER_LOGIN_SUCCESS)
+      .setStatus(201)
+      .setSuccessData(user);
   }
 }

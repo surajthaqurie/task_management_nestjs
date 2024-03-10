@@ -4,7 +4,12 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { LoginDto, SignupDto } from './dto';
+import {
+  LoginDto,
+  LoginResponseDto,
+  SignupDto,
+  SignupResponseDto,
+} from './dto';
 import * as bcrypt from 'bcrypt';
 import { AUTH_CONSTANT } from 'src/constant';
 import { JwtService } from '@nestjs/jwt';
@@ -17,7 +22,7 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async signup(signupDto: SignupDto) {
+  async signup(signupDto: SignupDto): Promise<SignupResponseDto> {
     try {
       const isEmailUnique = await this.prismaService.user.findUnique({
         where: { email: signupDto.email },
@@ -30,7 +35,13 @@ export class AuthService {
 
       const user = this.prismaService.user.create({
         data: { ...signupDto, password: hashPassword },
-        select: { id: true, email: true, fullName: true, createdAt: true },
+        select: {
+          id: true,
+          email: true,
+          fullName: true,
+          createdAt: true,
+          updatedAt: true,
+        },
       });
 
       return user;
@@ -39,7 +50,7 @@ export class AuthService {
     }
   }
 
-  async login(loginDto: LoginDto) {
+  async login(loginDto: LoginDto): Promise<LoginResponseDto> {
     try {
       const user = await this.prismaService.user.findUnique({
         where: { email: loginDto.email },

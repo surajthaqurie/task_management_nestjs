@@ -45,7 +45,7 @@ export class TaskResponseDto extends UpdateTaskDto {
     description: 'Created date/time of task',
     format: 'date',
   })
-  readonly createAt: Date;
+  readonly createdAt: Date;
 
   @ApiProperty({
     example: new Date(),

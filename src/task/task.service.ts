@@ -4,12 +4,13 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { Request } from 'express';
 import { IJwtResponse } from 'src/auth/interface';
 import { TASK_CONSTANT } from 'src/constant';
+import { Task } from '@prisma/client';
 
 @Injectable()
 export class TaskService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async createTask(createTaskDto: CreateTaskDto, req: Request) {
+  async createTask(createTaskDto: CreateTaskDto, req: Request): Promise<Task> {
     try {
       const createdUser = (req['user'] as IJwtResponse).id;
 
@@ -34,7 +35,7 @@ export class TaskService {
     }
   }
 
-  async getTaskById(id: string) {
+  async getTaskById(id: string): Promise<Task> {
     try {
       const task = await this.prismaService.task.findUnique({ where: { id } });
       if (!task)
@@ -46,7 +47,7 @@ export class TaskService {
     }
   }
 
-  async updateTask(id: string, updateTaskDto: UpdateTaskDto) {
+  async updateTask(id: string, updateTaskDto: UpdateTaskDto): Promise<Task> {
     try {
       const task = await this.getTaskById(id);
 
@@ -59,7 +60,10 @@ export class TaskService {
     }
   }
 
-  async changeTaskStatus(id: string, taskStatusDto: TaskStatusChangeDto) {
+  async changeTaskStatus(
+    id: string,
+    taskStatusDto: TaskStatusChangeDto,
+  ): Promise<Task> {
     try {
       const task = await this.getTaskById(id);
 
@@ -72,10 +76,12 @@ export class TaskService {
     }
   }
 
-  async removeTask(id: string) {
+  async removeTask(id: string): Promise<Task> {
     try {
       const task = await this.getTaskById(id);
       return this.prismaService.task.delete({ where: { id: task.id } });
-    } catch (err) {}
+    } catch (err) {
+      throw err;
+    }
   }
 }

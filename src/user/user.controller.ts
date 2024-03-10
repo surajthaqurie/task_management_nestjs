@@ -6,11 +6,10 @@ import {
   HttpStatus,
   Param,
   Req,
-  Res,
   UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { Request, Response } from 'express';
+import { Request } from 'express';
 import {
   ApiBearerAuth,
   ApiHeader,
@@ -23,6 +22,7 @@ import { USER_CONSTANT } from 'src/constant';
 import { UserResponseDto } from './dto';
 import { COMMON_ERROR } from 'src/constant/common.constant';
 import { IJwtResponse } from 'src/auth/interface';
+import { AppResponse } from 'src/utils';
 
 @ApiTags('User')
 @Controller('users')
@@ -38,14 +38,14 @@ export class UserController {
     isArray: true,
     description: USER_CONSTANT.USERS_FETCHED_SUCCESS,
   })
-  async getUsers(@Res() res: Response) {
+  async getUsers(): Promise<AppResponse<UserResponseDto[]>> {
     const users = await this.userService.getUsers();
 
-    return res.status(200).json({
-      success: true,
-      message: USER_CONSTANT.USERS_FETCHED_SUCCESS,
-      data: users,
-    });
+    return new AppResponse<UserResponseDto[]>(
+      USER_CONSTANT.USERS_FETCHED_SUCCESS,
+    )
+      .setStatus(200)
+      .setSuccessData(users);
   }
 
   @Get('profile')
@@ -66,15 +66,17 @@ export class UserController {
     name: 'Bearer',
     description: 'The token we need for auth',
   })
-  async getUserById(@Req() req: Request, @Res() res: Response) {
+  async getUserById(
+    @Req() req: Request,
+  ): Promise<AppResponse<UserResponseDto | null>> {
     const currentUser = req['user'] as IJwtResponse;
 
     const user = await this.userService.getUserById(currentUser.id);
-    return res.status(200).json({
-      success: true,
-      message: USER_CONSTANT.USER_PROFILE_FETCHED_SUCCESS,
-      data: user,
-    });
+    return new AppResponse<UserResponseDto | null>(
+      USER_CONSTANT.USER_PROFILE_FETCHED_SUCCESS,
+    )
+      .setStatus(200)
+      .setSuccessData(user);
   }
 
   @Delete(':id')
@@ -95,12 +97,15 @@ export class UserController {
     name: 'Bearer',
     description: 'The token we need for auth',
   })
-  async deleteUser(@Res() res: Response, @Param('id') userId: string) {
+  async deleteUser(
+    @Param('id') userId: string,
+  ): Promise<AppResponse<UserResponseDto | null>> {
     const user = await this.userService.deleteUser(userId);
-    return res.status(200).json({
-      success: true,
-      message: USER_CONSTANT.USER_DELETED_SUCCESS,
-      data: user,
-    });
+
+    return new AppResponse<UserResponseDto | null>(
+      USER_CONSTANT.USER_DELETED_SUCCESS,
+    )
+      .setStatus(200)
+      .setSuccessData(user);
   }
 }

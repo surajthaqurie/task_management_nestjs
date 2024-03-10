@@ -46,7 +46,7 @@ export class SignupResponseDto extends AuthDto {
     description: 'Created date/time of User',
     format: 'date',
   })
-  readonly createAt: Date;
+  readonly createdAt: Date;
 
   @ApiProperty({
     example: new Date(),
