@@ -17,6 +17,7 @@ export class LoginDto {
     description: 'The password of the User',
     format: 'string',
   })
+  @IsNotEmpty()
   @IsString()
   readonly password: string;
 }

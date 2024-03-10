@@ -35,6 +35,13 @@ export class SignupDto extends AuthDto {
 
 export class SignupResponseDto extends AuthDto {
   @ApiProperty({
+    example: '7c6cef4c-3c86-4ea2-a2ee-af9e990e3e7b',
+    description: 'Id for the user',
+    format: 'string',
+  })
+  id: string;
+
+  @ApiProperty({
     example: new Date(),
     description: 'Created date/time of User',
     format: 'date',

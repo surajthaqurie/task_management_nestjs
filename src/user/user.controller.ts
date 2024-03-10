@@ -22,6 +22,7 @@ import { JwtGuard } from 'src/auth/guards';
 import { USER_CONSTANT } from 'src/constant';
 import { UserResponseDto } from './dto';
 import { COMMON_ERROR } from 'src/constant/common.constant';
+import { IJwtResponse } from 'src/auth/interface';
 
 @ApiTags('User')
 @Controller('users')
@@ -66,8 +67,9 @@ export class UserController {
     description: 'The token we need for auth',
   })
   async getUserById(@Req() req: Request, @Res() res: Response) {
-    const user = req['user'];
+    const currentUser = req['user'] as IJwtResponse;
 
+    const user = await this.userService.getUserById(currentUser.id);
     return res.status(200).json({
       success: true,
       message: USER_CONSTANT.USER_PROFILE_FETCHED_SUCCESS,

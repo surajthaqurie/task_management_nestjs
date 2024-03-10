@@ -8,6 +8,7 @@ import { LoginDto, SignupDto } from './dto';
 import * as bcrypt from 'bcrypt';
 import { AUTH_CONSTANT } from 'src/constant';
 import { JwtService } from '@nestjs/jwt';
+import { Request } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -80,5 +81,24 @@ export class AuthService {
     } catch (err) {
       throw err;
     }
+  }
+
+  jwtExtractor() {
+    return (req: Request) => {
+      try {
+        let token =
+          req.headers['Authorization'] ||
+          req.headers['authorization'] ||
+          req.headers['Bearer'] ||
+          req.headers['bearer'];
+
+        if (token)
+          token = String(token).replace('Bearer ', '').replace(' ', '');
+
+        return token;
+      } catch (err) {
+        throw err;
+      }
+    };
   }
 }

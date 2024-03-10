@@ -6,6 +6,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { UserModule } from './user/user.module';
 import { ValidationPipe } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
+import { TaskModule } from './task/task.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -13,6 +14,7 @@ async function bootstrap() {
   app.enableCors({ origin: true, credentials: true });
   app.setGlobalPrefix('api/v1');
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+  app.enableCors({ origin: true, credentials: true });
 
   const options = new DocumentBuilder()
     .setTitle(process.env.APP_NAME!)
@@ -21,7 +23,7 @@ async function bootstrap() {
     .build();
 
   const apiDocument = SwaggerModule.createDocument(app, options, {
-    include: [AuthModule, UserModule],
+    include: [AuthModule, UserModule, TaskModule],
   });
   SwaggerModule.setup('/api-docs', app, apiDocument);
 
