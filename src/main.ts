@@ -34,7 +34,7 @@ async function bootstrap() {
   const PORT = process.env.PORT || 4001;
   await app.listen(PORT);
 
-  console.log(`APP IS LISTENING TO PORT ${PORT}`);
-  console.log(`Swagger document ${process.env.APP_URL}`);
+  console.log(`APP IS LISTENING TO PORT ${process.env.APP_URL}`);
+  console.log(`Swagger document ${process.env.APP_URL}/api-docs`);
 }
 bootstrap();
