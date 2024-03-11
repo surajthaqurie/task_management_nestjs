@@ -1,3 +1,12 @@
+## Start up the project
+
+- ```pnpm install```
+- create .env file on the root and copy content from .example.env 
+- ```docker-compose up -d```
+- ```pnpm prisma migrate deploy```
+- ```pnpm prisma generate```
+- ```pnpm dev```
+
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
 </p>
@@ -72,11 +81,4 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 
 Nest is [MIT licensed](LICENSE).
 
-## Start up the project
 
-pnpm install
-docker compose up -d
-pnpm prisma migrate deploy
-pnpm prisma generate
-
-pnpm dev
