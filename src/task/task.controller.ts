@@ -12,7 +12,6 @@ import {
   Put,
   Patch,
   Query,
-  BadRequestException,
 } from '@nestjs/common';
 import { TaskService } from './task.service';
 import {
@@ -70,7 +69,7 @@ export class TaskController {
         .setStatus(200)
         .setSuccessData(task);
     } catch (err) {
-      throw new BadRequestException(err);
+      throw err;
     }
   }
 
@@ -125,7 +124,7 @@ export class TaskController {
         .setStatus(200)
         .setSuccessData(tasks);
     } catch (err) {
-      throw new BadRequestException(err);
+      throw err;
     }
   }
 
@@ -157,7 +156,7 @@ export class TaskController {
         .setStatus(200)
         .setSuccessData(task);
     } catch (err) {
-      throw new BadRequestException(err);
+      throw err;
     }
   }
 
@@ -199,7 +198,7 @@ export class TaskController {
         .setStatus(200)
         .setSuccessData(task);
     } catch (err) {
-      throw new BadRequestException(err);
+      throw err;
     }
   }
 
@@ -240,7 +239,7 @@ export class TaskController {
         .setStatus(200)
         .setSuccessData(task);
     } catch (err) {
-      throw new BadRequestException(err);
+      throw err;
     }
   }
 
@@ -283,7 +282,7 @@ export class TaskController {
         .setStatus(200)
         .setSuccessData(task);
     } catch (err) {
-      throw new BadRequestException(err);
+      throw err;
     }
   }
 
@@ -319,7 +318,7 @@ export class TaskController {
         .setStatus(200)
         .setSuccessData(task);
     } catch (err) {
-      throw new BadRequestException(err);
+      throw err;
     }
   }
 }

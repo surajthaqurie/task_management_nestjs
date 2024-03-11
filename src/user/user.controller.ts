@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Controller,
   Delete,
   Get,
@@ -48,7 +47,7 @@ export class UserController {
         .setStatus(200)
         .setSuccessData(users);
     } catch (err) {
-      throw new BadRequestException(err);
+      throw err;
     }
   }
 
@@ -81,7 +80,7 @@ export class UserController {
         .setStatus(200)
         .setSuccessData(user);
     } catch (err) {
-      throw new BadRequestException(err);
+      throw err;
     }
   }
 
@@ -115,7 +114,7 @@ export class UserController {
         .setStatus(200)
         .setSuccessData(user);
     } catch (err) {
-      throw new BadRequestException(err);
+      throw err;
     }
   }
 }

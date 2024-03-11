@@ -1,11 +1,4 @@
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  HttpCode,
-  HttpStatus,
-  Post,
-} from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
@@ -45,7 +38,7 @@ export class AuthController {
         .setStatus(201)
         .setSuccessData(user);
     } catch (err) {
-      throw new BadRequestException(err);
+      throw err;
     }
   }
 
@@ -70,7 +63,7 @@ export class AuthController {
         .setStatus(201)
         .setSuccessData(user);
     } catch (err) {
-      throw new BadRequestException(err);
+      throw err;
     }
   }
 }
