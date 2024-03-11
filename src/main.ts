@@ -7,7 +7,7 @@ import { UserModule } from './user/user.module';
 import { ValidationPipe } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
 import { TaskModule } from './task/task.module';
-import { HttpExceptionFilter } from './filters';
+import { AppExceptionFilter } from './filters';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -18,7 +18,7 @@ async function bootstrap() {
   app.enableCors({ origin: true, credentials: true });
 
   //http-exception as global filter
-  app.useGlobalFilters(new HttpExceptionFilter());
+  app.useGlobalFilters(new AppExceptionFilter());
 
   const options = new DocumentBuilder()
     .setTitle(process.env.APP_NAME!)

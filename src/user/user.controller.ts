@@ -22,6 +22,7 @@ import { COMMON_ERROR } from 'src/constant/common.constant';
 import { IJwtResponse } from 'src/auth/interface';
 import { AppResponse } from 'src/utils';
 import { getUser } from 'src/auth/decorators';
+import { IUser } from './interfaces';
 
 @ApiTags('User')
 @Controller('users')
@@ -37,13 +38,11 @@ export class UserController {
     isArray: true,
     description: USER_CONSTANT.USERS_FETCHED_SUCCESS,
   })
-  async getUsers(): Promise<AppResponse<UserResponseDto[]>> {
+  async getUsers(): Promise<AppResponse<IUser[]>> {
     try {
       const users = await this.userService.getUsers();
 
-      return new AppResponse<UserResponseDto[]>(
-        USER_CONSTANT.USERS_FETCHED_SUCCESS,
-      )
+      return new AppResponse<IUser[]>(USER_CONSTANT.USERS_FETCHED_SUCCESS)
         .setStatus(200)
         .setSuccessData(users);
     } catch (err) {
@@ -71,10 +70,10 @@ export class UserController {
   })
   async getUserById(
     @getUser() currentUser: IJwtResponse,
-  ): Promise<AppResponse<UserResponseDto | null>> {
+  ): Promise<AppResponse<IUser | null>> {
     try {
       const user = await this.userService.getUserById(currentUser.id);
-      return new AppResponse<UserResponseDto | null>(
+      return new AppResponse<IUser | null>(
         USER_CONSTANT.USER_PROFILE_FETCHED_SUCCESS,
       )
         .setStatus(200)
@@ -104,13 +103,11 @@ export class UserController {
   })
   async deleteUser(
     @Param('id') userId: string,
-  ): Promise<AppResponse<UserResponseDto | null>> {
+  ): Promise<AppResponse<IUser | null>> {
     try {
       const user = await this.userService.deleteUser(userId);
 
-      return new AppResponse<UserResponseDto | null>(
-        USER_CONSTANT.USER_DELETED_SUCCESS,
-      )
+      return new AppResponse<IUser | null>(USER_CONSTANT.USER_DELETED_SUCCESS)
         .setStatus(200)
         .setSuccessData(user);
     } catch (err) {

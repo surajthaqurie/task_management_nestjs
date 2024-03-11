@@ -1,12 +1,12 @@
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
-import { UserResponseDto } from './dto';
+import { IUser } from './interfaces';
 
 @Injectable()
 export class UserService {
   constructor(private prisma: PrismaService) {}
 
-  async getUsers(): Promise<UserResponseDto[]> {
+  async getUsers(): Promise<IUser[]> {
     try {
       return this.prisma.user.findMany({
         select: {
@@ -22,7 +22,7 @@ export class UserService {
     }
   }
 
-  async getUserById(id: string): Promise<UserResponseDto | null> {
+  async getUserById(id: string): Promise<IUser | null> {
     try {
       return this.prisma.user.findUnique({
         where: { id },
@@ -39,7 +39,7 @@ export class UserService {
     }
   }
 
-  async deleteUser(id: string): Promise<UserResponseDto | null> {
+  async deleteUser(id: string): Promise<IUser | null> {
     try {
       return this.prisma.user.delete({
         where: { id },
