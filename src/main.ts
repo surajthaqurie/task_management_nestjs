@@ -7,7 +7,7 @@ import { UserModule } from './user/user.module';
 import { ValidationPipe } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
 import { TaskModule } from './task/task.module';
-import { AppExceptionFilter } from './filters';
+import { AppExceptionFilter, PrismaExceptionFilter } from './filters';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -19,6 +19,7 @@ async function bootstrap() {
 
   //http-exception as global filter
   app.useGlobalFilters(new AppExceptionFilter());
+  app.useGlobalFilters(new PrismaExceptionFilter());
 
   const options = new DocumentBuilder()
     .setTitle(process.env.APP_NAME!)
