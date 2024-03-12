@@ -2,6 +2,7 @@ import {
   ConflictException,
   Injectable,
   UnauthorizedException,
+  Logger,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { LoginDto, SignupDto } from './dto';
@@ -22,6 +23,7 @@ export class AuthService {
   ) {}
 
   async signup(signupDto: SignupDto): Promise<IUser> {
+    const logger = new Logger(AuthService.name + '-signup');
     try {
       const isEmailUnique = await this.prismaService.user.findUnique({
         where: { email: signupDto.email },
@@ -45,11 +47,13 @@ export class AuthService {
 
       return user;
     } catch (err) {
+      logger.error(err);
       throw err;
     }
   }
 
   async login(loginDto: LoginDto): Promise<IAuthLogin> {
+    const logger = new Logger(AuthService.name + '-login');
     try {
       const user = await this.prismaService.user.findUnique({
         where: { email: loginDto.email },
@@ -72,12 +76,14 @@ export class AuthService {
         email: user.email,
         accessToken,
       };
-    } catch (error) {
-      throw error;
+    } catch (err) {
+      logger.error(err);
+      throw err;
     }
   }
 
   createAccessToken(userId: string): string {
+    const logger = new Logger(AuthService.name + '-createAccessToken');
     try {
       const accessToken = this.jwtService.sign(
         { userId },
@@ -89,12 +95,14 @@ export class AuthService {
 
       return accessToken;
     } catch (err) {
+      logger.error(err);
       throw err;
     }
   }
 
   jwtExtractor() {
     return (req: Request) => {
+      const logger = new Logger(AuthService.name + '-jwtExtractor');
       try {
         let token =
           req.headers['Authorization'] ||
@@ -107,6 +115,7 @@ export class AuthService {
 
         return token;
       } catch (err) {
+        logger.error(err);
         throw err;
       }
     };

@@ -1,7 +1,8 @@
-import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { createParamDecorator, ExecutionContext, Logger } from '@nestjs/common';
 
 export const getUser = createParamDecorator(
   (data: string | undefined, ctx: ExecutionContext) => {
+    const logger = new Logger('GetUserDecorator');
     try {
       const request = ctx.switchToHttp().getRequest();
       if (data) {
@@ -9,6 +10,7 @@ export const getUser = createParamDecorator(
       }
       return request.user;
     } catch (err) {
+      logger.error(err);
       throw err;
     }
   },

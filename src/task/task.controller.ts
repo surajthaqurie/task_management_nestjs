@@ -8,7 +8,6 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
-  Req,
   Put,
   Patch,
   Query,
@@ -30,11 +29,11 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtGuard } from 'src/auth/guards';
-import { Request } from 'express';
 import { COMMON_ERROR, TASK_CONSTANT, USER_CONSTANT } from 'src/constant';
 import { AppResponse } from 'src/utils';
 import { TASK_STATUS, Task } from '@prisma/client';
 import { IJwtResponse } from 'src/auth/interface';
+import { getUser } from 'src/auth/decorators';
 
 @ApiTags('Task')
 @UseGuards(JwtGuard)
@@ -44,7 +43,10 @@ export class TaskController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Create Task.' })
+  @ApiOperation({
+    summary: 'Create Task.',
+    description: 'Authenticated user can create a task',
+  })
   @ApiBearerAuth()
   @ApiHeader({
     name: 'Bearer',
@@ -60,22 +62,24 @@ export class TaskController {
     description: TASK_CONSTANT.TASK_CREATED_SUCCESS,
   })
   async createTask(
-    @Req() req: Request,
+    @getUser() currentUser: IJwtResponse,
     @Body() createTaskDto: CreateTaskDto,
   ): Promise<AppResponse<Task>> {
-    try {
-      const task = await this.taskService.createTask(createTaskDto, req);
-      return new AppResponse<Task>(TASK_CONSTANT.TASK_CREATED_SUCCESS)
-        .setStatus(200)
-        .setSuccessData(task);
-    } catch (err) {
-      throw err;
-    }
+    const task = await this.taskService.createTask(
+      createTaskDto,
+      currentUser.id,
+    );
+    return new AppResponse<Task>(TASK_CONSTANT.TASK_CREATED_SUCCESS)
+      .setStatus(200)
+      .setSuccessData(task);
   }
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get all task.' })
+  @ApiOperation({
+    summary: 'Get all task.',
+    description: 'Authenticated user get all task',
+  })
   @ApiQuery({
     name: 'status',
     enum: TASK_STATUS,
@@ -114,22 +118,22 @@ export class TaskController {
     @Query('assignedUser') assignedUser: string,
     @Query('createdAt') createdAt: Date,
   ): Promise<AppResponse<Task[]>> {
-    try {
-      const tasks = await this.taskService.getAllTask(
-        status,
-        assignedUser,
-        createdAt,
-      );
-      return new AppResponse<Task[]>(TASK_CONSTANT.TASKS_FETCHED_SUCCESS)
-        .setStatus(200)
-        .setSuccessData(tasks);
-    } catch (err) {
-      throw err;
-    }
+    let query = {};
+    if (status) query = { ...query, status };
+    if (assignedUser) query = { ...query, assignedUser };
+    if (createdAt) query = { ...query, createdAt };
+
+    const tasks = await this.taskService.getAllTask(query);
+    return new AppResponse<Task[]>(TASK_CONSTANT.TASKS_FETCHED_SUCCESS)
+      .setStatus(200)
+      .setSuccessData(tasks);
   }
 
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get task details by Id.' })
+  @ApiOperation({
+    summary: 'Get task details by Id.',
+    description: 'Authenticated user get task details',
+  })
   @ApiBearerAuth()
   @ApiHeader({
     name: 'Bearer',
@@ -145,24 +149,20 @@ export class TaskController {
     description: TASK_CONSTANT.TASK_DETAIL_FETCHED_SUCCESS,
   })
   @Get(':id')
-  async getTaskById(
-    @Param('id') id: string,
-    @Req() req: Request,
-  ): Promise<AppResponse<Task>> {
-    try {
-      const currentUser = req['user'] as IJwtResponse;
-      const task = await this.taskService.getTaskById(id, currentUser.id);
-      return new AppResponse<Task>(TASK_CONSTANT.TASK_DETAIL_FETCHED_SUCCESS)
-        .setStatus(200)
-        .setSuccessData(task);
-    } catch (err) {
-      throw err;
-    }
+  async getTaskById(@Param('id') id: string): Promise<AppResponse<Task>> {
+    const task = await this.taskService.getTaskById(id);
+    return new AppResponse<Task>(TASK_CONSTANT.TASK_DETAIL_FETCHED_SUCCESS)
+      .setStatus(200)
+      .setSuccessData(task);
   }
 
   @Put(':id')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Update task.' })
+  @ApiOperation({
+    summary: 'Update task.',
+    description:
+      'Assigned user can update their task and any authenticated user can update a non-assigned task.',
+  })
   @ApiBearerAuth()
   @ApiHeader({
     name: 'Bearer',
@@ -171,6 +171,10 @@ export class TaskController {
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
     description: COMMON_ERROR.UNAUTHORIZED,
+  })
+  @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    description: TASK_CONSTANT.FORBIDDEN_UPDATE_TASK,
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -184,27 +188,25 @@ export class TaskController {
   async updateTask(
     @Param('id') id: string,
     @Body() updateTaskDto: UpdateTaskDto,
-    @Req() req: Request,
+    @getUser() currentUser: IJwtResponse,
   ): Promise<AppResponse<Task>> {
-    try {
-      const currentUser = req['user'] as IJwtResponse;
-
-      const task = await this.taskService.updateTask(
-        id,
-        currentUser.id,
-        updateTaskDto,
-      );
-      return new AppResponse<Task>(TASK_CONSTANT.TASK_UPDATE_SUCCESS)
-        .setStatus(200)
-        .setSuccessData(task);
-    } catch (err) {
-      throw err;
-    }
+    const task = await this.taskService.updateTask(
+      id,
+      currentUser.id,
+      updateTaskDto,
+    );
+    return new AppResponse<Task>(TASK_CONSTANT.TASK_UPDATE_SUCCESS)
+      .setStatus(200)
+      .setSuccessData(task);
   }
 
   @Patch('status/:id')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Change task status.' })
+  @ApiOperation({
+    summary: 'Change task status.',
+    description:
+      'The status of an assigned task can be change by the assigned user, and the status of a non-assigned task can be modified by any authenticated user.',
+  })
   @ApiBearerAuth()
   @ApiHeader({
     name: 'Bearer',
@@ -213,6 +215,10 @@ export class TaskController {
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
     description: COMMON_ERROR.UNAUTHORIZED,
+  })
+  @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    description: TASK_CONSTANT.FORBIDDEN_STATUS_CHANGE_TASK,
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -226,26 +232,25 @@ export class TaskController {
   async changeTaskStatus(
     @Body() taskStatusDto: TaskStatusChangeDto,
     @Param('id') taskId: string,
-    @Req() req: Request,
+    @getUser() currentUser: IJwtResponse,
   ): Promise<AppResponse<Task>> {
-    try {
-      const currentUser = req['user'] as IJwtResponse;
-      const task = await this.taskService.changeTaskStatus(
-        taskId,
-        currentUser.id,
-        taskStatusDto,
-      );
-      return new AppResponse<Task>(TASK_CONSTANT.TASK_STATUS_CHANGED_SUCCESS)
-        .setStatus(200)
-        .setSuccessData(task);
-    } catch (err) {
-      throw err;
-    }
+    const task = await this.taskService.changeTaskStatus(
+      taskId,
+      currentUser.id,
+      taskStatusDto,
+    );
+    return new AppResponse<Task>(TASK_CONSTANT.TASK_STATUS_CHANGED_SUCCESS)
+      .setStatus(200)
+      .setSuccessData(task);
   }
 
   @Patch('assign/:id')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Assign user on the task.' })
+  @ApiOperation({
+    summary: 'Assign user on the task.',
+    description:
+      'The user who is currently allocated can assign tasks to other users, and any authenticated user can assign non-assigned tasks.',
+  })
   @ApiBearerAuth()
   @ApiHeader({
     name: 'Bearer',
@@ -254,6 +259,10 @@ export class TaskController {
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
     description: COMMON_ERROR.UNAUTHORIZED,
+  })
+  @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    description: TASK_CONSTANT.FORBIDDEN_ASSIGN_TASK,
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -272,23 +281,20 @@ export class TaskController {
     @Body() taskAssignedDto: TaskAssignedUserDto,
     @Param('id') taskId: string,
   ): Promise<AppResponse<Task>> {
-    try {
-      const task = await this.taskService.assignTaskUser(
-        taskId,
-        taskAssignedDto,
-      );
+    const task = await this.taskService.assignTaskUser(taskId, taskAssignedDto);
 
-      return new AppResponse<Task>(TASK_CONSTANT.USER_ASSIGNED_SUCCESS)
-        .setStatus(200)
-        .setSuccessData(task);
-    } catch (err) {
-      throw err;
-    }
+    return new AppResponse<Task>(TASK_CONSTANT.USER_ASSIGNED_SUCCESS)
+      .setStatus(200)
+      .setSuccessData(task);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Remove task.' })
+  @ApiOperation({
+    summary: 'Remove task.',
+    description:
+      'Assigned task can be deleted by only that assigned user or non assigned task can be delete by any authentication user',
+  })
   @ApiBearerAuth()
   @ApiHeader({
     name: 'Bearer',
@@ -297,6 +303,10 @@ export class TaskController {
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
     description: COMMON_ERROR.UNAUTHORIZED,
+  })
+  @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    description: TASK_CONSTANT.FORBIDDEN_DELETE_TASK,
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -309,16 +319,11 @@ export class TaskController {
   })
   async removeTask(
     @Param('id') id: string,
-    @Req() req: Request,
+    @getUser() currentUser: IJwtResponse,
   ): Promise<AppResponse<Task>> {
-    try {
-      const currentUser = req['user'] as IJwtResponse;
-      const task = await this.taskService.removeTask(id, currentUser.id);
-      return new AppResponse<Task>(TASK_CONSTANT.TASK_DELETED_SUCCESS)
-        .setStatus(200)
-        .setSuccessData(task);
-    } catch (err) {
-      throw err;
-    }
+    const task = await this.taskService.removeTask(id, currentUser.id);
+    return new AppResponse<Task>(TASK_CONSTANT.TASK_DELETED_SUCCESS)
+      .setStatus(200)
+      .setSuccessData(task);
   }
 }

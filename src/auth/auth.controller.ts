@@ -30,16 +30,10 @@ export class AuthController {
   async signup(
     @Body() signupDto: SignupDto,
   ): Promise<AppResponse<SignupResponseDto>> {
-    try {
-      const user = await this.authService.signup(signupDto);
-      return new AppResponse<SignupResponseDto>(
-        AUTH_CONSTANT.USER_SIGNUP_SUCCESS,
-      )
-        .setStatus(201)
-        .setSuccessData(user);
-    } catch (err) {
-      throw err;
-    }
+    const user = await this.authService.signup(signupDto);
+    return new AppResponse<SignupResponseDto>(AUTH_CONSTANT.USER_SIGNUP_SUCCESS)
+      .setStatus(201)
+      .setSuccessData(user);
   }
 
   @Post('login')
@@ -57,13 +51,9 @@ export class AuthController {
   async login(
     @Body() loginDto: LoginDto,
   ): Promise<AppResponse<LoginResponseDto>> {
-    try {
-      const user = await this.authService.login(loginDto);
-      return new AppResponse<LoginResponseDto>(AUTH_CONSTANT.USER_LOGIN_SUCCESS)
-        .setStatus(201)
-        .setSuccessData(user);
-    } catch (err) {
-      throw err;
-    }
+    const user = await this.authService.login(loginDto);
+    return new AppResponse<LoginResponseDto>(AUTH_CONSTANT.USER_LOGIN_SUCCESS)
+      .setStatus(201)
+      .setSuccessData(user);
   }
 }

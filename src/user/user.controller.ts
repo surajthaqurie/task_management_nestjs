@@ -4,7 +4,6 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  Param,
   UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
@@ -25,13 +24,22 @@ import { getUser } from 'src/auth/decorators';
 import { IUser } from './interfaces';
 
 @ApiTags('User')
+@UseGuards(JwtGuard)
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get all users.' })
+  @ApiOperation({
+    summary: 'Get all users.',
+    description: 'Authenticated user can get all user list',
+  })
+  @ApiBearerAuth()
+  @ApiHeader({
+    name: 'Bearer',
+    description: 'The token we need for auth',
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     type: UserResponseDto,
@@ -39,21 +47,19 @@ export class UserController {
     description: USER_CONSTANT.USERS_FETCHED_SUCCESS,
   })
   async getUsers(): Promise<AppResponse<IUser[]>> {
-    try {
-      const users = await this.userService.getUsers();
+    const users = await this.userService.getUsers();
 
-      return new AppResponse<IUser[]>(USER_CONSTANT.USERS_FETCHED_SUCCESS)
-        .setStatus(200)
-        .setSuccessData(users);
-    } catch (err) {
-      throw err;
-    }
+    return new AppResponse<IUser[]>(USER_CONSTANT.USERS_FETCHED_SUCCESS)
+      .setStatus(200)
+      .setSuccessData(users);
   }
 
   @Get('profile')
-  @UseGuards(JwtGuard)
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get user profile.' })
+  @ApiOperation({
+    summary: 'Get user profile.',
+    description: 'Authenticated user get their profile',
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     type: UserResponseDto,
@@ -71,22 +77,21 @@ export class UserController {
   async getUserById(
     @getUser() currentUser: IJwtResponse,
   ): Promise<AppResponse<IUser | null>> {
-    try {
-      const user = await this.userService.getUserById(currentUser.id);
-      return new AppResponse<IUser | null>(
-        USER_CONSTANT.USER_PROFILE_FETCHED_SUCCESS,
-      )
-        .setStatus(200)
-        .setSuccessData(user);
-    } catch (err) {
-      throw err;
-    }
+    const user = await this.userService.getUserById(currentUser.id);
+    return new AppResponse<IUser | null>(
+      USER_CONSTANT.USER_PROFILE_FETCHED_SUCCESS,
+    )
+      .setStatus(200)
+      .setSuccessData(user);
   }
 
   @Delete(':id')
   @UseGuards(JwtGuard)
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Delete user.' })
+  @ApiOperation({
+    summary: 'Delete user.',
+    description: 'Authenticated user can delete their account',
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     type: UserResponseDto,
@@ -102,16 +107,12 @@ export class UserController {
     description: 'The token we need for auth',
   })
   async deleteUser(
-    @Param('id') userId: string,
+    @getUser() currentUser: IJwtResponse,
   ): Promise<AppResponse<IUser | null>> {
-    try {
-      const user = await this.userService.deleteUser(userId);
+    const user = await this.userService.deleteUser(currentUser.id);
 
-      return new AppResponse<IUser | null>(USER_CONSTANT.USER_DELETED_SUCCESS)
-        .setStatus(200)
-        .setSuccessData(user);
-    } catch (err) {
-      throw err;
-    }
+    return new AppResponse<IUser | null>(USER_CONSTANT.USER_DELETED_SUCCESS)
+      .setStatus(200)
+      .setSuccessData(user);
   }
 }

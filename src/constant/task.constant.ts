@@ -7,4 +7,10 @@ export const TASK_CONSTANT = {
   TASK_RECORD_NOT_FOUND: 'Task record not found',
   TASK_STATUS_CHANGED_SUCCESS: 'Task status changed successfully',
   USER_ASSIGNED_SUCCESS: 'User assigned on the task successfully',
+
+  FORBIDDEN_DELETE_TASK: "You don't have permission to delete this task",
+  FORBIDDEN_ASSIGN_TASK: "You don't have permission to assign this task",
+  FORBIDDEN_STATUS_CHANGE_TASK:
+    "You don't have permission to change the status of this task",
+  FORBIDDEN_UPDATE_TASK: "You don't have permission to update this task",
 };
